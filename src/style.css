@@ -1,19 +1,31 @@
 @charset "utf-8";
 
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
 }
 
 body, html {
-  height: 100vh;
-  width: 100vw;
-  font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  background-color: #f9f7f7;
-  overflow: hidden;
-  position: relative;
+    height: 100vh;
+    width: 100vw;
+    font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-color: #f9f7f7;
+    overflow: hidden;
+    position: relative;
+}
+
+/* 默认选中样式 */
+::selection {
+    background-color: #dee1f7; /* 浅紫色背景 */
+    color: #000; /* 黑色文字 */
+}
+
+/* 针对Firefox的兼容性 */
+::-moz-selection {
+    background-color: #dee1f7;
+    color: #000;
 }

@@ -9,9 +9,9 @@
             <i class="icon user-icon"></i>
             <input
                 id="username"
-                type="text"
                 v-model="username"
                 placeholder="请输入用户"
+                type="text"
             />
           </div>
         </div>
@@ -22,41 +22,49 @@
             <i class="icon lock-icon"></i>
             <input
                 id="password"
-                type="password"
                 v-model="password"
                 placeholder="请输入密码"
+                type="password"
             />
           </div>
         </div>
-
-        <!-- 图片验证码 -->
         <div class="input-group">
           <label for="captcha">验证码</label>
           <div class="captcha-wrapper">
-            <img
-                :src="captchaUrl"
-                alt="验证码"
-                class="captcha-img"
-                @click="refreshCaptcha"
-            />
+            <div class="captcha-container">
+              <img
+                  :class="{ 'is-loading': !imgLoaded }"
+                  :src="captchaUrl"
+                  alt="验证码"
+                  class="captcha-img"
+                  @click="refreshCaptcha"
+                  @load="imgLoaded = true"
+              />
+            </div>
             <input
                 id="captcha"
-                class="input-group"
-                type="text"
                 v-model="captcha"
-                placeholder="请输入验证码"
+                class="captcha-input"
                 maxlength="6"
+                placeholder="请输入验证码"
+                type="text"
             />
           </div>
         </div>
 
+
         <div class="actions">
-          <a href="#" class="forgot-password">忘记密码</a>
+          <a class="forgot-password" href="#">忘记密码</a>
           <div class="button-group">
-            <button type="submit" class="btn login-btn">登录</button>
-            <button type="button" class="btn register-btn" @click="handleRegister">
+            <button class="btn login-btn" type="submit">登录</button>
+            <button class="btn register-btn" type="button" @click="handleRegister">
               注册
             </button>
+
+
+            <button class="btn register-btn" @click="notify">点我</button>
+
+
           </div>
         </div>
       </form>
@@ -64,7 +72,129 @@
   </div>
 </template>
 
+<script setup>
+import {getCurrentInstance, onMounted, ref} from 'vue'
+import axios from 'axios'
+
+const captchaUrl = ref('')
+const captcha = ref('')
+const imgLoaded = ref(false)
+
+// 获取全局 $toast（可选）
+const {appContext} = getCurrentInstance()
+const $toast = appContext.config.globalProperties?.$toast
+
+function notify() {
+  $toast.success('保存成功！')
+}
+
+
+// 刷新验证码函数
+const refreshCaptcha = async () => {
+  imgLoaded.value = false
+  try {
+    const response = await axios.get('https://wanqiu.cloudns.ch:4433/api/captcha')
+    if (response.data.url) {
+      captchaUrl.value = response.data.url
+    }
+  } catch (error) {
+    console.error('刷新验证码失败', error)
+    $toast?.error?.('验证码加载失败') // 若有全局提示系统
+  }
+}
+
+// 初始加载
+onMounted(() => {
+  refreshCaptcha()
+})
+</script>
+
 <style scoped>
+/* 验证码整体区域 */
+.captcha-wrapper {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 1.5rem; /* 使用相对单位控制图片和输入框的间距 */
+}
+
+/* 验证码容器（用于定位伪元素动画） */
+.captcha-container {
+  position: relative;
+  width: 10rem;
+  height: 3.75rem;
+}
+
+/* 验证码图片 */
+.captcha-img {
+  width: 100%;
+  height: 100%;
+  margin: auto;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  object-fit: cover;
+  transition: filter 0.6s ease-in-out, opacity 0.6s ease, transform 0.3s ease;
+  background: linear-gradient(135deg, #f2f2f2, #e0e0e0);
+}
+
+/* 加载中和点击时的相同效果 */
+.captcha-img.is-loading,
+.captcha-img:active {
+  transform: scale(0.95);
+  filter: blur(5px) grayscale(50%);
+  opacity: 0.6;
+}
+
+/* 旋转加载动画 */
+.captcha-container::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 2.2rem; /* 使用相对单位 */
+  height: 2.2rem; /* 使用相对单位 */
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  border-top-color: #333;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  animation: spin 1s linear infinite;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* 仅在加载时显示旋转圈 */
+.captcha-img.is-loading + .captcha-container::before {
+  opacity: 1;
+}
+
+/* 旋转动画 */
+@keyframes spin {
+  to {
+    transform: translate(-50%, -50%) rotate(360deg);
+  }
+}
+
+/* 输入框样式 */
+.captcha-wrapper input {
+  width: 7.5rem;
+  padding: 0.625rem 0.75rem;
+  font-size: 1rem;
+  color: #222;
+  background: #fff;
+  border: 1px solid #ccc;
+  border-radius: 0.5rem;
+  outline: none;
+  transition: all 0.25s ease;
+}
+
+/* 输入框获得焦点时的样式 */
+.captcha-wrapper input:focus {
+  border-color: #5a67d8;
+  box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.2);
+}
+
+
 /* 通用基础 */
 * {
   box-sizing: border-box;
@@ -145,39 +275,6 @@ body {
   box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.2);
 }
 
-/* 验证码区域 */
-.captcha-wrapper {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.captcha-img {
-  width: 10rem;
-  height: 3.75rem;
-  border-radius: 0.5rem;
-  cursor: pointer;
-  margin-right: 1rem;
-  object-fit: cover;
-}
-
-.captcha-wrapper input {
-  width: 7.5rem;
-  padding: 0.625rem 0.75rem;
-  font-size: 1rem;
-  color: #222;
-  background: #fff;
-  border: 1px solid #ccc;
-  border-radius: 0.5rem;
-  outline: none;
-  transition: all 0.25s ease;
-  margin: auto;
-}
-
-.captcha-wrapper input:focus {
-  border-color: #5a67d8;
-  box-shadow: 0 0 0 3px rgba(90, 103, 216, 0.2);
-}
 
 /* 忘记密码链接 */
 .forgot-password {
@@ -249,34 +346,4 @@ body {
 </style>
 
 
-<script setup>
-import { ref, onMounted } from 'vue'
-import axios from 'axios'
 
-// 创建响应式变量来保存验证码图片的URL
-const captchaUrl = ref('')
-
-// 创建变量来绑定用户输入的验证码
-const captcha = ref('')
-
-// 处理点击刷新验证码的函数
-const refreshCaptcha = async () => {
-  try {
-    // 发送GET请求，获取新的验证码 URL
-    const response = await axios.get('https://wanqiu.cloudns.ch:4433/api/captcha')
-
-    // 更新验证码图片URL
-    if (response.data.url) {
-      captchaUrl.value = response.data.url
-    }
-  } catch (error) {
-    console.error('刷新验证码失败', error)
-    // 可以根据需求添加错误处理逻辑，如提示用户刷新失败
-  }
-}
-
-// 页面加载时触发验证码请求
-onMounted(() => {
-  refreshCaptcha()
-})
-</script>
