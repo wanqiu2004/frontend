@@ -70,7 +70,6 @@
           <div class="button-group">
             <button class="btn login-btn" type="submit">登录</button>
             <button class="btn register-btn" type="button" @click="handleRegister">注册</button>
-            <button class="btn register-btn" type="button" @click="notify">点我</button>
           </div>
         </div>
 
@@ -100,7 +99,6 @@ const $toast = appContext.config.globalProperties?.$toast
 // Toast 提示方法
 const notifySuccess = (msg) => $toast?.success(msg)
 const notifyError = (msg) => $toast?.error(msg)
-const notify = () => notifySuccess('保存成功！')
 
 // 刷新验证码
 const refreshCaptcha = async () => {
@@ -135,6 +133,7 @@ const handleLogin = async () => {
     } else {
       notifyError(message)
       await refreshCaptcha()
+      captcha.value = ''
     }
   } catch (error) {
     notifyError('请求失败，请检查网络')
