@@ -2,7 +2,11 @@
   <div class="login-container">
     <div class="login-box">
       <h2 class="login-title">欢迎登录</h2>
+
+      <!-- 登录表单 -->
       <form class="login-form" @submit.prevent="handleLogin">
+
+        <!-- 用户名 -->
         <div class="input-group">
           <label for="username">账号</label>
           <div class="input-wrapper">
@@ -10,12 +14,13 @@
             <input
                 id="username"
                 v-model="username"
-                placeholder="请输入用户"
                 type="text"
+                placeholder="请输入用户"
             />
           </div>
         </div>
 
+        <!-- 密码 -->
         <div class="input-group">
           <label for="password">密码</label>
           <div class="input-wrapper">
@@ -23,90 +28,127 @@
             <input
                 id="password"
                 v-model="password"
-                placeholder="请输入密码"
                 type="password"
+                placeholder="请输入密码"
             />
           </div>
         </div>
+
+        <!-- 验证码 -->
         <div class="input-group">
           <label for="captcha">验证码</label>
           <div class="captcha-wrapper">
+
+            <!-- 验证码图片 -->
             <div class="captcha-container">
               <img
-                  :class="{ 'is-loading': !imgLoaded }"
                   :src="captchaUrl"
+                  :class="{ 'is-loading': !imgLoaded }"
                   alt="验证码"
                   class="captcha-img"
                   @click="refreshCaptcha"
                   @load="imgLoaded = true"
               />
             </div>
+
+            <!-- 输入框 -->
             <input
                 id="captcha"
                 v-model="captcha"
                 class="captcha-input"
+                type="text"
                 maxlength="6"
                 placeholder="请输入验证码"
-                type="text"
             />
           </div>
         </div>
 
-
+        <!-- 操作按钮 -->
         <div class="actions">
           <a class="forgot-password" href="#">忘记密码</a>
+
           <div class="button-group">
             <button class="btn login-btn" type="submit">登录</button>
-            <button class="btn register-btn" type="button" @click="handleRegister">
-              注册
-            </button>
-
-
-            <button class="btn register-btn" @click="notify">点我</button>
-
-
+            <button class="btn register-btn" type="button" @click="handleRegister">注册</button>
+            <button class="btn register-btn" type="button" @click="notify">点我</button>
           </div>
         </div>
+
       </form>
     </div>
   </div>
 </template>
 
 <script setup>
-import {getCurrentInstance, onMounted, ref} from 'vue'
+import { ref, onMounted, getCurrentInstance } from 'vue'
 import axios from 'axios'
 
-const captchaUrl = ref('')
+// 表单字段
+const username = ref('')
+const password = ref('')
 const captcha = ref('')
+
+// 验证码状态
+const captchaUrl = ref('')
+const captchaKey = ref('')
 const imgLoaded = ref(false)
 
-// 获取全局 $toast（可选）
-const {appContext} = getCurrentInstance()
+// 获取全局 toast 实例
+const { appContext } = getCurrentInstance()
 const $toast = appContext.config.globalProperties?.$toast
 
-function notify() {
-  $toast.success('保存成功！')
-}
+// Toast 提示方法
+const notifySuccess = (msg) => $toast?.success(msg)
+const notifyError = (msg) => $toast?.error(msg)
+const notify = () => notifySuccess('保存成功！')
 
-
-// 刷新验证码函数
+// 刷新验证码
 const refreshCaptcha = async () => {
   imgLoaded.value = false
   try {
-    const response = await axios.get('https://wanqiu.cloudns.ch:4433/api/captcha')
-    if (response.data.url) {
-      captchaUrl.value = response.data.url
-    }
+    const response = await axios.get('https://wanqiu.cloudns.ch:4433/api/captcha', {
+      responseType: 'blob',
+    })
+    captchaKey.value = response.headers['x-captcha-key']
+    captchaUrl.value = URL.createObjectURL(response.data)
   } catch (error) {
-    console.error('刷新验证码失败', error)
-    $toast?.error?.('验证码加载失败') // 若有全局提示系统
+    notifyError('获取验证码失败')
   }
 }
 
-// 初始加载
-onMounted(() => {
-  refreshCaptcha()
-})
+// 登录处理逻辑
+const handleLogin = async () => {
+  if (!captchaKey.value) {
+    await refreshCaptcha()
+  }
+
+  try {
+    const { data } = await axios.post('https://wanqiu.cloudns.ch:4433/api/captcha/verify', {
+      captchaCode: captcha.value,
+      captchaKey: captchaKey.value,
+    })
+
+    const { code, message } = data
+
+    if (code === 0) {
+      notifySuccess(message)
+    } else {
+      notifyError(message)
+      await refreshCaptcha()
+    }
+  } catch (error) {
+    notifyError('请求失败，请检查网络')
+    await refreshCaptcha()
+  }
+}
+
+// 注册点击事件（可自定义逻辑）
+const handleRegister = () => {
+  notifySuccess('注册功能开发中…')
+}
+
+// 页面加载初始化验证码
+onMounted(refreshCaptcha)
 </script>
 
 <style scoped>
