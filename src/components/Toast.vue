@@ -1,8 +1,8 @@
 <template>
   <div class="toast-container">
-    <TransitionGroup name="toast" tag="div">
+    <TransitionGroup name="toast" tag="div" class="toast-list">
       <div
-          v-for="(toast, index) in toasts"
+          v-for="toast in toasts"
           :key="toast.id"
           :class="['toast', toast.type]"
       >
@@ -14,7 +14,7 @@
 </template>
 
 <script setup>
-import {ref} from 'vue'
+import { ref } from 'vue'
 
 let id = 0
 const toasts = ref([])
@@ -31,94 +31,83 @@ function addToast(toast) {
   }, 3000)
 }
 
-defineExpose({addToast})
+defineExpose({ addToast })
 </script>
 
 <style scoped>
 .toast-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  padding-top: 1rem;
+  position: fixed;
+  top: 1.5rem;
+  right: 1.5rem;
+  z-index: 9999;
   pointer-events: none;
 }
 
-/* 动画 */
-.toast-enter-from {
-  opacity: 0;
-  transform: translateY(-20px);
+.toast-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 
-.toast-enter-active {
-  transition: all 0.3s ease;
-}
-
+/* 进入和离开动画 */
+.toast-enter-from,
 .toast-leave-to {
   opacity: 0;
-  transform: translateY(-20px);
+  transform: translateY(-10px) scale(0.95);
 }
 
+.toast-enter-active,
 .toast-leave-active {
   transition: all 0.3s ease;
 }
 
-
 .toast {
   pointer-events: auto;
-  margin: 0.5rem;
-  padding: 1rem 1.5rem;
-  border-radius: 16px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  font-size: 14px;
-  font-weight: bold;
-  background-color: #fdfdfd;
-  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.08);
   display: flex;
-  align-items: flex-start;
-  max-width: 90%;
-  min-width: 80px;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(6px);
+  border: 1px solid #d1d5db;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  max-width: 320px;
+  min-width: 200px;
+  color: #1f2937;
+  font-size: 15px;
+  font-weight: 500;
   word-break: break-word;
-  line-height: 1.5;
-  color: #333;
-  text-align: left;
-  flex-wrap: wrap;
 }
 
 .icon {
-  margin-right: 10px;
-  font-size: 18px;
+  font-size: 20px;
   flex-shrink: 0;
+  color: inherit;
 }
 
 .message {
   flex: 1;
-  word-break: break-word;
 }
 
-
-/* 类型样式 */
+/* 业务风格的类型色彩 */
 .toast.success {
-  border-color: #a3e635;
-  background-color: #ecfccb;
+  border-color: #22c55e;
+  background-color: rgba(34, 197, 94, 0.1);
 }
 
 .toast.error {
-  border-color: #f87171;
-  background-color: #fee2e2;
+  border-color: #ef4444;
+  background-color: rgba(239, 68, 68, 0.1);
 }
 
 .toast.warning {
-  border-color: #facc15;
-  background-color: #fef9c3;
+  border-color: #f59e0b;
+  background-color: rgba(245, 158, 11, 0.1);
 }
 
 .toast.info {
-  border-color: #38bdf8;
-  background-color: #e0f2fe;
-}
-
-.icon {
-  margin-right: 10px;
-  font-size: 18px;
+  border-color: #3b82f6;
+  background-color: rgba(59, 130, 246, 0.1);
 }
 </style>

@@ -46,7 +46,7 @@
                   :class="{ 'is-loading': !imgLoaded }"
                   alt="验证码"
                   class="captcha-img"
-                  @click="refreshCaptcha"
+                  @click="refreshCaptchaOnClick"
                   @load="imgLoaded = true"
               />
             </div>
@@ -73,6 +73,10 @@
           </div>
         </div>
 
+        <div>
+          <DatePicker />
+        </div>
+
       </form>
     </div>
   </div>
@@ -81,6 +85,16 @@
 <script setup>
 import { ref, onMounted, getCurrentInstance } from 'vue'
 import axios from 'axios'
+
+
+import { DatePicker } from 'ant-design-vue'
+
+
+
+
+
+
+
 
 // 表单字段
 const username = ref('')
@@ -101,6 +115,20 @@ const notifySuccess = (msg) => $toast?.success(msg)
 const notifyError = (msg) => $toast?.error(msg)
 
 // 刷新验证码
+const refreshCaptchaOnClick = async () => {
+  imgLoaded.value = false
+  await new Promise(resolve => setTimeout(resolve, 100)) // 等待300ms
+  try {
+    const response = await axios.get('https://wanqiu.cloudns.ch:4433/api/captcha', {
+      responseType: 'blob',
+    })
+    captchaKey.value = response.headers['x-captcha-key']
+    captchaUrl.value = URL.createObjectURL(response.data)
+  } catch (error) {
+    notifyError('获取验证码失败')
+  }
+}
+
 const refreshCaptcha = async () => {
   imgLoaded.value = false
   try {
@@ -114,10 +142,11 @@ const refreshCaptcha = async () => {
   }
 }
 
+
 // 登录处理逻辑
 const handleLogin = async () => {
   if (!captchaKey.value) {
-    await refreshCaptcha()
+    await refreshCaptchaOnClick()
   }
 
   try {
@@ -132,12 +161,12 @@ const handleLogin = async () => {
       notifySuccess(message)
     } else {
       notifyError(message)
-      await refreshCaptcha()
+      await refreshCaptchaOnClick()
       captcha.value = ''
     }
   } catch (error) {
     notifyError('请求失败，请检查网络')
-    await refreshCaptcha()
+    await refreshCaptchaOnClick()
   }
 }
 
