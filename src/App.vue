@@ -72,11 +72,6 @@
             <button class="btn register-btn" type="button" @click="handleRegister">注册</button>
           </div>
         </div>
-
-        <div>
-          <DatePicker />
-        </div>
-
       </form>
     </div>
   </div>
