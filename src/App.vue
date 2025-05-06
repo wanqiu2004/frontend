@@ -34,6 +34,19 @@
           </div>
         </div>
 
+        <div class="input-group" v-if="isRegistrationPage">
+          <label for="password">邮箱验证码</label>
+          <div class="input-wrapper">
+            <i class="icon Email-Verification-Code"></i>
+            <input
+                id="password"
+                v-model="password"
+                type="password"
+                placeholder="请输入验证码"
+            />
+          </div>
+        </div>
+
         <!-- 验证码 -->
         <div class="input-group">
           <label for="captcha">验证码</label>
@@ -89,7 +102,7 @@ import { DatePicker } from 'ant-design-vue'
 
 
 
-
+const isRegistrationPage = ref(false) // 是否为注册页面
 
 // 表单字段
 const username = ref('')
@@ -166,8 +179,9 @@ const handleLogin = async () => {
 }
 
 // 注册点击事件（可自定义逻辑）
-const handleRegister = () => {
+const handleRegister = () => { 
   notifySuccess('注册功能开发中…')
+  isRegistrationPage.value = !isRegistrationPage.value // 切换注册页面状态
 }
 
 // 页面加载初始化验证码
@@ -407,6 +421,9 @@ body {
 
 .lock-icon::before {
   content: "🔒";
+}
+.Email-Verification-Code::before {
+  content: "🛡️";
 }
 </style>
 
