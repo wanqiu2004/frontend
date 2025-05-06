@@ -1,21 +1,19 @@
 <template>
   <div class="login-container">
-    <div class="login-box">
+    <div class="login-box" ref="boxRef">
       <h2 class="login-title">欢迎登录</h2>
 
-      <!-- 登录表单 -->
       <form class="login-form" @submit.prevent="handleLogin">
-
         <!-- 用户名 -->
         <div class="input-group">
           <label for="username">账号</label>
           <div class="input-wrapper">
             <i class="icon user-icon"></i>
             <input
-                id="username"
-                v-model="username"
-                type="text"
-                placeholder="请输入用户"
+              id="username"
+              v-model="username"
+              type="text"
+              placeholder="请输入用户"
             />
           </div>
         </div>
@@ -26,60 +24,66 @@
           <div class="input-wrapper">
             <i class="icon lock-icon"></i>
             <input
-                id="password"
-                v-model="password"
-                type="password"
-                placeholder="请输入密码"
+              id="password"
+              v-model="password"
+              type="password"
+              placeholder="请输入密码"
             />
           </div>
         </div>
 
-        <div class="input-group" v-if="isRegistrationPage">
-          <label for="password">邮箱验证码</label>
-          <div class="input-wrapper">
-            <i class="icon Email-Verification-Code"></i>
-            <input
-                id="password"
-                v-model="password"
-                type="password"
+        <!-- 验证码输入框区域 -->
+        <transition
+          name="fade-slide"
+          @before-enter="beforeEnter"
+          @enter="enter"
+          @leave="leave"
+        >
+          <div
+            v-if="isRegistrationPage"
+            class="input-group"
+            ref="codeGroupRef"
+          >
+            <label for="email-code">邮箱验证码</label>
+            <div class="input-wrapper">
+              <i class="icon Email-Verification-Code"></i>
+              <input
+                id="email-code"
+                v-model="emailCode"
+                type="text"
                 placeholder="请输入验证码"
-            />
+              />
+            </div>
           </div>
-        </div>
+        </transition>
 
-        <!-- 验证码 -->
+        <!-- 图形验证码 -->
         <div class="input-group">
           <label for="captcha">验证码</label>
           <div class="captcha-wrapper">
-
-            <!-- 验证码图片 -->
             <div class="captcha-container">
               <img
-                  :src="captchaUrl"
-                  :class="{ 'is-loading': !imgLoaded }"
-                  alt="验证码"
-                  class="captcha-img"
-                  @click="refreshCaptchaOnClick"
-                  @load="imgLoaded = true"
+                :src="captchaUrl"
+                :class="{ 'is-loading': !imgLoaded }"
+                alt="验证码"
+                class="captcha-img"
+                @click="refreshCaptchaOnClick"
+                @load="imgLoaded = true"
               />
             </div>
-
-            <!-- 输入框 -->
             <input
-                id="captcha"
-                v-model="captcha"
-                class="captcha-input"
-                type="text"
-                maxlength="6"
-                placeholder="请输入验证码"
+              id="captcha"
+              v-model="captcha"
+              class="captcha-input"
+              type="text"
+              maxlength="6"
+              placeholder="请输入验证码"
             />
           </div>
         </div>
 
-        <!-- 操作按钮 -->
         <div class="actions">
           <a class="forgot-password" href="#">忘记密码</a>
-
           <div class="button-group">
             <button class="btn login-btn" type="submit">登录</button>
             <button class="btn register-btn" type="button" @click="handleRegister">注册</button>
@@ -90,11 +94,30 @@
   </div>
 </template>
 
+
 <script setup>
-import { ref, onMounted, getCurrentInstance } from 'vue'
+import { ref, onMounted, getCurrentInstance, nextTick } from 'vue'
 import axios from 'axios'
 import { DatePicker } from 'ant-design-vue'
 const isRegistrationPage = ref(false) // 是否为注册页面
+
+const boxRef = ref(null)
+const codeGroupRef = ref(null)
+// 动画钩子
+const beforeEnter = el => {
+  el.style.height = '0'
+  el.style.opacity = '0'
+}
+const enter = el => {
+  el.style.transition = 'height 0.3s ease, opacity 0.3s ease'
+  el.style.height = el.scrollHeight + 'px'
+  el.style.opacity = '1'
+}
+const leave = el => {
+  el.style.transition = 'height 0.3s ease, opacity 0.3s ease'
+  el.style.height = '0'
+  el.style.opacity = '0'
+}
 
 // 表单字段
 const username = ref('')
@@ -181,6 +204,36 @@ onMounted(refreshCaptcha)
 </script>
 
 <style scoped>
+.login-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  padding: 2rem;
+}
+
+.login-box {
+  width: 360px;
+  padding: 2rem;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+  overflow: hidden;
+}
+
+/* 过渡动画 */
+.fade-slide-enter-active,
+.fade-slide-leave-active {
+  transition: height 0.3s ease, opacity 0.3s ease;
+}
+
+.fade-slide-enter-from,
+.fade-slide-leave-to {
+  height: 0;
+  opacity: 0;
+}
+
 /* 验证码整体区域 */
 .captcha-wrapper {
   display: flex;
@@ -428,6 +481,18 @@ body {
     transform: translateY(0);
   }
 }
+/* 进入前和离开后的状态 */
+.fade-enter-from,
+.fade-leave-to {
+  opacity: 0;
+}
+
+/* 进入过程中和离开过程中的状态 */
+.fade-enter-active,
+.fade-leave-active {
+  transition: opacity 0.5s ease;
+}
+
 </style>
 
 
