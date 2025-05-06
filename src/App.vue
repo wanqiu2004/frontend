@@ -93,15 +93,7 @@
 <script setup>
 import { ref, onMounted, getCurrentInstance } from 'vue'
 import axios from 'axios'
-
-
 import { DatePicker } from 'ant-design-vue'
-
-
-
-
-
-
 const isRegistrationPage = ref(false) // 是否为注册页面
 
 // 表单字段
@@ -303,6 +295,7 @@ body {
   border-radius: 0.8rem;
   box-shadow: 0 0 0.8rem rgba(0, 0, 0, 0.1);
   background: #fff;
+  animation: fadeIn 0.5s ease-in-out;
 }
 
 .login-title {
@@ -424,6 +417,16 @@ body {
 }
 .Email-Verification-Code::before {
   content: "🛡️";
+}
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 </style>
 
