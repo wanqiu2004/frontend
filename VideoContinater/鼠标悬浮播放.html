@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>封面视频预览</title>
+<style>
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #f5f5f5;
+    margin: 0;
+  }
+
+  .video-preview-container {
+    position: relative;
+    width: 640px;
+    height: 360px;
+    overflow: hidden;
+    cursor: pointer;
+    border-radius: 10px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+    transition: transform 0.3s ease;
+  }
+
+  .video-preview-container:hover {
+    transform: scale(1.05);
+  }
+
+  .video-cover, .video-preview {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    transition: opacity 0.5s ease;
+  }
+
+  .video-preview {
+    opacity: 0;
+    object-fit: contain;
+  }
+</style>
+</head>
+<body>
+
+<div class="video-preview-container">
+  <img src="index.jpg" alt="Video Cover" class="video-cover">
+  <video src="index.mp4" class="video-preview" preload="auto" loop muted></video>
+</div>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+    const container = document.querySelector('.video-preview-container');
+    const cover = document.querySelector('.video-cover');
+    const video = document.querySelector('.video-preview');
+
+    container.addEventListener('mouseenter', function() {
+      cover.style.opacity = '0';
+      video.style.opacity = '1';
+      video.play();
+    });
+
+    container.addEventListener('mouseleave', function() {
+      video.pause();
+      video.currentTime = 0;
+      video.style.opacity = '0';
+      cover.style.opacity = '1';
+    });
+  });
+</script>
+
+</body>
+</html>

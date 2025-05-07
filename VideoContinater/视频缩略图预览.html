@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>视频缩略图预览</title>
+    <style>
+        /* 页面基本样式 */
+        body {
+            font-family: 'Arial', sans-serif;
+            background-color: #e9eff6; /* 更温暖的背景色 */
+            margin: 0;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            text-align: center;
+            color: #4d5c63; /* 更深的文本色 */
+        }
+
+        /* 中心化的文本容器 */
+        .center-container {
+            text-align: center;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 12px;
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1); /* 更柔和的阴影 */
+        }
+
+        h2 {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            color: #2c3e50;
+        }
+
+        p {
+            font-size: 1.1rem;
+            margin-bottom: 20px;
+            color: #7f8c8d;
+        }
+
+        /* 进度条容器样式 */
+        .progress-container-wrapper {
+            width: 100%;
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 10px 0;
+        }
+
+        .progress-container {
+            width: 100%;
+            height: 25px;
+            background-color: #dbe6ed; /* 更柔和的进度条背景色 */
+            position: relative;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05); /* 轻微的阴影 */
+            margin: 0 auto;
+        }
+
+        /* 进度条样式 */
+        .progress-bar {
+            height: 100%;
+            background-color: #1abc9c; /* 更明亮活泼的颜色 */
+            border-radius: 12px;
+            position: relative;
+            cursor: pointer;
+        }
+
+        /* 鼠标悬浮时显示的缩略图 */
+        .thumbnail-preview {
+            position: absolute;
+            top: -110px;
+            left: 0;
+            width: 160px;
+            height: 90px;
+            background-size: 1600px 20880px;
+            background-image: url('preview.jpg');
+            background-position: 0 0;
+            visibility: hidden;
+            z-index: 100;
+            border: 2px solid #1abc9c; /* 更新为进度条颜色 */
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+            transition: background-position 0.1s ease;
+        }
+
+        /* 提示文本样式 */
+        .tooltip {
+            position: absolute;
+            top: 10px;
+            font-size: 14px;
+            color: #fff;
+            visibility: hidden;
+            background-color: rgba(0, 0, 0, 0.7);
+            padding: 5px 10px;
+            border-radius: 5px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+        }
+    </style>
+</head>
+<body>
+
+<div class="center-container">
+    <h2>视频缩略图预览</h2>
+    <p>移动鼠标到进度条附近查看对应的缩略图预览：</p>
+
+    <!-- 进度条容器 -->
+    <div class="progress-container-wrapper">
+        <div class="progress-container" id="progress-container">
+            <div class="progress-bar" id="progress-bar"></div>
+            <div class="thumbnail-preview" id="thumbnail-preview"></div>
+            <div class="tooltip" id="tooltip"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 获取进度条元素
+    const progressBar = document.getElementById('progress-bar');
+    const progressContainer = document.getElementById('progress-container');
+    const thumbnailPreview = document.getElementById('thumbnail-preview');
+    const tooltip = document.getElementById('tooltip');
+
+    // 视频缩略图拼图相关参数
+    const frameWidth = 10;
+    const frameHeight = 90;
+    const totalFrames = 2320;
+    const thumbnailWidth = 160;
+    const imageWidth = 1600;
+    const imageHeight = 20880;
+
+    let isNear = false;
+    const sensitivity = 10;
+
+    // 防抖函数，减少过多的更新
+    function debounce(fn, delay) {
+        let timeout;
+        return function () {
+            clearTimeout(timeout);
+            timeout = setTimeout(() => fn.apply(this, arguments), delay);
+        };
+    }
+
+    // 更新缩略图和提示文本的函数
+    function updateThumbnail(event) {
+        const rect = progressContainer.getBoundingClientRect();
+
+        if (!isNear && event.clientX >= rect.left - sensitivity && event.clientX <= rect.right + sensitivity &&
+            event.clientY >= rect.top - sensitivity && event.clientY <= rect.bottom + sensitivity) {
+            isNear = true;
+        } else if (isNear && !(event.clientX >= rect.left - sensitivity && event.clientX <= rect.right + sensitivity &&
+            event.clientY >= rect.top - sensitivity && event.clientY <= rect.bottom + sensitivity)) {
+            isNear = false;
+            thumbnailPreview.style.visibility = 'hidden';
+            tooltip.style.visibility = 'hidden';
+        }
+
+        if (isNear) {
+            const barWidth = progressContainer.offsetWidth;
+            const mouseX = event.clientX - rect.left;
+
+            const frameIndex = Math.floor(mouseX / (barWidth / totalFrames));
+            const row = Math.floor(frameIndex / frameWidth);
+            const col = frameIndex % frameWidth;
+
+            const backgroundPositionX = -(col * thumbnailWidth);
+            const backgroundPositionY = -(row * frameHeight);
+
+            thumbnailPreview.style.transition = 'background-position 0.1s ease';
+            thumbnailPreview.style.backgroundPosition = `${backgroundPositionX}px ${backgroundPositionY}px`;
+            thumbnailPreview.style.left = `${mouseX - 80}px`;
+            thumbnailPreview.style.visibility = 'visible';
+
+            tooltip.style.left = `${mouseX}px`;
+            tooltip.textContent = `帧：${frameIndex + 1}`;
+            tooltip.style.visibility = 'visible';
+        }
+    }
+
+    // 使用防抖来优化mousemove事件处理
+    document.addEventListener('mousemove', debounce(function (event) {
+        updateThumbnail(event);
+    }, 16));
+
+    // 隐藏缩略图和提示文本
+    progressContainer.addEventListener('mouseleave', function() {
+        thumbnailPreview.style.visibility = 'hidden';
+        tooltip.style.visibility = 'hidden';
+    });
+</script>
+
+</body>
+</html>

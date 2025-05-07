@@ -1,0 +1,34 @@
+{
+  "videoInfo": {
+    "sourceUrl": "https://example.com/path/to/video.m3u8", 
+    "qualityOptions": {
+      "hasMultipleResolutions": true, 
+      "availableResolutions": ["360p", "480p", "720p", "1080p"]
+    },
+    "subtitleInfo": {
+      "hasSubtitles": true,
+      "subtitleLanguages": ["zh", "en"],
+      "subtitleUrls": {
+        "zh": "https://example.com/path/to/subtitle/zh.vtt",
+        "en": "https://example.com/path/to/subtitle/en.vtt"
+      }
+    },
+    "danmuInfo": {
+      "hasDanmu": true,
+      "danmuSourceUrl": "https://example.com/path/to/danmu.xml"
+    }
+  }
+}
+
+
+
+
+
+
+
+
+GET api/videoInfo 返回json {videoInfo:url} 13457682
+GET api/captcha 返回验证码图片
+
+
+video/f3500fb
